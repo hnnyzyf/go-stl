@@ -1,13 +1,7 @@
 package stl
 
-
-
-type Entry interface{
-        
+type Entry interface {
 }
 
-
-
 type TreeMap struct {
-
 }

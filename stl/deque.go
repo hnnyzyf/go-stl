@@ -12,7 +12,7 @@ const (
 
 type chunck []interface{}
 
-var pool = &sync.Pool{
+var dequePool = &sync.Pool{
 	New: func() interface{} {
 		return make(chunck, ChunckSize)
 	},
@@ -156,7 +156,7 @@ func (d *Deque) Pushback(val interface{}) {
 
 	//alloc memory
 	if d.mmap[d.end.chunck] == nil {
-		d.mmap[d.end.chunck] = pool.Get().(chunck)
+		d.mmap[d.end.chunck] = dequePool.Get().(chunck)
 	}
 
 	//add new val
@@ -175,7 +175,7 @@ func (d *Deque) Pushfront(val interface{}) {
 
 	//alloc memory
 	if d.mmap[d.begin.chunck] == nil {
-		d.mmap[d.begin.chunck] = pool.Get().(chunck)
+		d.mmap[d.begin.chunck] = dequePool.Get().(chunck)
 	}
 	//add new val
 	d.mmap[d.begin.chunck][d.begin.index] = val
@@ -192,7 +192,7 @@ func (d *Deque) Popback() (interface{}, bool) {
 
 		//if old chunck does not been used ,revoke it
 		if chunck != d.end.chunck {
-			pool.Put(d.mmap[d.end.chunck])
+			dequePool.Put(d.mmap[d.end.chunck])
 			d.mmap[d.end.chunck] = nil
 		}
 
@@ -215,7 +215,7 @@ func (d *Deque) Popfront() (interface{}, bool) {
 
 		//if old chunck does not been used ,revoke it
 		if chunck != d.begin.chunck {
-			pool.Put(d.mmap[d.begin.chunck])
+			dequePool.Put(d.mmap[d.begin.chunck])
 			d.mmap[d.begin.chunck] = nil
 		}
 

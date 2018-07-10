@@ -83,13 +83,14 @@ func TestIsRBtree(t *testing.T) {
 		rb.Push(x)
 		if ok, err := rb.IsRBTree(testRoot, testRedNode, testPath); !ok {
 			t.Error(err)
+			break
 		}
 	}
 
 	for _, x := range a {
 		rb.Pop(x)
 		if ok, err := rb.IsRBTree(testRoot, testRedNode, testPath); !ok {
-			t.Error(err)
+			t.Error(x, err)
 		}
 	}
 
@@ -109,7 +110,7 @@ func TestIsRBtree(t *testing.T) {
 	}
 }
 
-func BenchmarkInsert(b *testing.B) {
+func BenchmarkPush(b *testing.B) {
 	rb := NewRBTree()
 
 	for i := 0; i < b.N; i++ {
@@ -118,7 +119,7 @@ func BenchmarkInsert(b *testing.B) {
 
 }
 
-func BenchmarkPop(b *testing.B) {
+func BenchmarkMix(b *testing.B) {
 	rb := NewRBTree()
 
 	for i := 0; i < b.N; i++ {
