@@ -15,5 +15,5 @@ func (s *Stack) Push(val interface{}) {
 }
 
 func (s *Stack) Pop() (interface{}, bool) {
-	return s.d.Popback()
+	return s.d.PopBack()
 }
