@@ -154,7 +154,7 @@ func BenchmarkPut(b *testing.B) {
 
 func BenchmarkGet(b *testing.B) {
 	t := NewTreeMap()
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 1000000; i++ {
 		e := new(i, i)
 		t.Put(e)
 	}
