@@ -54,12 +54,12 @@ func NewDeque() *Deque {
 		mmap: make([]chunck, MapSize),
 
 		begin: &iterator{
-			chunck: (MapSize - 1) / 2,
-			index:  ChunckSize,
+			chunck: (MapSize + 1) / 2,
+			index:  0,
 		},
 		end: &iterator{
-			chunck: (MapSize + 1) / 2,
-			index:  -1,
+			chunck: (MapSize - 1) / 2,
+			index:  ChunckSize - 1,
 		},
 	}
 }
@@ -144,8 +144,8 @@ func (d *Deque) reallocmmap() {
 
 }
 
-//pushback add a new val in the back
-func (d *Deque) Pushback(val interface{}) {
+//PushBack add a new val in the back
+func (d *Deque) PushBack(val interface{}) {
 	//realloc if need
 	if d.end.chunck == len(d.mmap)-1 && d.end.index == ChunckSize-1 {
 		d.reallocmmap()
@@ -163,8 +163,8 @@ func (d *Deque) Pushback(val interface{}) {
 	d.mmap[d.end.chunck][d.end.index] = val
 }
 
-//Pushfront add a new val in the front
-func (d *Deque) Pushfront(val interface{}) {
+//PushFront add a new val in the front
+func (d *Deque) PushFront(val interface{}) {
 	//realloc if need
 	if d.begin.chunck == 0 && d.begin.index == 0 {
 		d.reallocmmap()
@@ -181,8 +181,8 @@ func (d *Deque) Pushfront(val interface{}) {
 	d.mmap[d.begin.chunck][d.begin.index] = val
 }
 
-//Popback delete a new val in the back
-func (d *Deque) Popback() (interface{}, bool) {
+//PopBack delete a new val in the back
+func (d *Deque) PopBack() (interface{}, bool) {
 	//revoke used memory if need
 	defer d.reallocmmap()
 
@@ -204,8 +204,8 @@ func (d *Deque) Popback() (interface{}, bool) {
 	return nil, false
 }
 
-//Popfront delete a new val in the front
-func (d *Deque) Popfront() (interface{}, bool) {
+//PopFront delete a new val in the front
+func (d *Deque) PopFront() (interface{}, bool) {
 	//revoke used memory if need
 	defer d.reallocmmap()
 

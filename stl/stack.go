@@ -11,7 +11,7 @@ func NewStack() *Stack {
 }
 
 func (s *Stack) Push(val interface{}) {
-	s.d.Pushback(val)
+	s.d.PushBack(val)
 }
 
 func (s *Stack) Pop() (interface{}, bool) {
