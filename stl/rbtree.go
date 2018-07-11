@@ -106,7 +106,8 @@ func (n *node) child() *node {
 }
 
 type RBTree struct {
-	Root *node
+	root *node
+	size int
 }
 
 //a new RBTree
@@ -115,30 +116,32 @@ func NewRBTree() *RBTree {
 }
 
 //init
-func (r *RBTree) init(val Value) {
-	r.Root = &node{
-		val:   val,
-		color: BLACK,
+func (r *RBTree) lazyInit(val Value) {
+	if r.root == nil {
+		r.root = &node{
+			val:   val,
+			color: BLACK,
+		}
+		r.size++
 	}
 }
 
 //push a new node
 func (r *RBTree) Push(val Value) {
 	//do only once
-	if r.Root == nil {
-		r.init(val)
-	}
+	r.lazyInit(val)
 
 	//add a new node success
 	if n, ok := r.add(val); ok {
-		r.Balance(n)
+		r.size++
+		r.balance(n)
 	}
 
 }
 
 //pop will remove a node
 func (r *RBTree) Pop(val Value) {
-	if r.Root == nil {
+	if r.root == nil {
 		return
 	}
 
@@ -150,19 +153,80 @@ func (r *RBTree) Pop(val Value) {
 		n.val = del.val
 		//delete the node and get the child node
 		c, ok := r.delete(del)
+		r.size--
 		if !ok {
-			r.ReBalance(c)
+			r.rebalance(c)
 		}
 	}
 
 }
 
-//Balance will make a RBTree become balance
-func (r *RBTree) Balance(n *node) {
+//Get will return a Value
+func (r *RBTree) Get(val Value) (Value, bool) {
+	if n := r.find(val); n != nil {
+		return n.val, true
+	} else {
+		return nil, false
+	}
+}
+
+//Next will return a function closure
+func (r *RBTree) AscIter() func() (Value, bool) {
+	//create a Stack and add the first element
+	s := NewStack()
+	curr := r.root
+	next := func() (Value, bool) {
+		for curr != nil {
+			s.Push(curr)
+			curr = curr.l
+		}
+		//if curr does not have a left child,pop stack
+		if e, ok := s.Pop(); ok {
+			n := e.(*node)
+			curr = n.r
+			return n.val, true
+		} else {
+			//only happen when all node have been visited
+			return nil, false
+		}
+	}
+	return next
+}
+
+//Next will return a function closure
+func (r *RBTree) DescIter() func() (Value, bool) {
+	//create a Stack and add the first element
+	s := NewStack()
+	curr := r.root
+	next := func() (Value, bool) {
+		for curr != nil {
+			s.Push(curr)
+			curr = curr.r
+		}
+		//if curr does not have a right child,pop stack
+		if e, ok := s.Pop(); ok {
+			n := e.(*node)
+			curr = n.l
+			return n.val, true
+		} else {
+			//only happen when all node have been visited
+			return nil, false
+		}
+	}
+	return next
+}
+
+//Len will return size of rbtree
+func (r *RBTree) Len() int {
+	return r.size
+}
+
+//balance will make a RBTree become balance
+func (r *RBTree) balance(n *node) {
 	//begin
 	curr := n
 	for {
-		if curr == r.Root {
+		if curr == r.root {
 			//case 1:新节点N位于树的根上，没有父节点。在这种情形下，我们把它重绘为黑色以满足性质2
 			curr.color = BLACK
 			break
@@ -181,7 +245,7 @@ func (r *RBTree) Balance(n *node) {
 			pa.color = BLACK
 			uc.color = BLACK
 			gp.color = RED
-			//continue Balance，set grandp node as current node to rebalance
+			//continue balance，set grandp node as current node to rebalance
 			curr = gp
 			continue
 
@@ -219,12 +283,12 @@ func (r *RBTree) Balance(n *node) {
 }
 
 //rebalance will be executed alter a black node is deleted
-func (r *RBTree) ReBalance(n *node) {
+func (r *RBTree) rebalance(n *node) {
 	curr := n
 	for {
 
 		if isBlack(curr) {
-			if curr == nil || curr == r.Root {
+			if curr == nil || curr == r.root {
 				//case 0:n is nil
 				break
 			} else if pa := curr.p; pa.r == curr && isRed(curr.r) {
@@ -303,7 +367,7 @@ func (r *RBTree) r2l(n *node) {
 	pa.p = n
 
 	if gp == nil {
-		r.Root = n
+		r.root = n
 	} else if gp.l == pa {
 		gp.l = n
 	} else {
@@ -324,7 +388,7 @@ func (r *RBTree) r2r(n *node) {
 	n.r = pa
 	pa.p = n
 	if gp == nil {
-		r.Root = n
+		r.root = n
 	} else if gp.l == pa {
 		gp.l = n
 	} else {
@@ -336,7 +400,7 @@ func (r *RBTree) r2r(n *node) {
 
 //add will add a new node
 func (r *RBTree) add(val Value) (*node, bool) {
-	curr := r.Root
+	curr := r.root
 	for {
 
 		switch {
@@ -365,7 +429,8 @@ func (r *RBTree) add(val Value) (*node, bool) {
 				return curr.r, true
 			}
 		default:
-			return nil, false
+			//if equal,return the node
+			return curr, false
 		}
 
 	}
@@ -373,7 +438,7 @@ func (r *RBTree) add(val Value) (*node, bool) {
 
 //delete will find the node
 func (r *RBTree) find(val Value) *node {
-	curr := r.Root
+	curr := r.root
 	for {
 		switch {
 		//smaller than root then turn to l
@@ -420,8 +485,8 @@ func (r *RBTree) replace(n *node) *node {
 
 //delete will delete a node
 func (r *RBTree) delete(n *node) (*node, bool) {
-	if n == r.Root {
-		r.Root = nil
+	if n == r.root {
+		r.root = nil
 		return nil, true
 	}
 
@@ -492,11 +557,11 @@ type Hook func(n *node) bool
 
 //do bfs for a RBtree
 func (r *RBTree) BFS(hook Hook) bool {
-	if r.Root == nil {
+	if r.root == nil {
 		return true
 	}
 
-	queue := []*node{r.Root}
+	queue := []*node{r.root}
 	for idx := 0; idx < len(queue); idx++ {
 		n := queue[idx]
 		if hook != nil && !hook(n) {
@@ -517,14 +582,14 @@ func (r *RBTree) BFS(hook Hook) bool {
 }
 
 //test a RBTree
-func (r *RBTree) IsRBTree(testRoot Hook, testRedNode Hook, testPath Hook) (bool, error) {
+func (r *RBTree) IsRBTree(testroot Hook, testRedNode Hook, testPath Hook) (bool, error) {
 
-	if r.Root == nil {
+	if r.root == nil {
 		return true, nil
 	}
 
 	//性质2
-	if !testRoot(r.Root) {
+	if !testroot(r.root) {
 		return false, errors.New("The root is RED")
 	}
 

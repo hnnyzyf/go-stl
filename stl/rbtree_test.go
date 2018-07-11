@@ -14,6 +14,10 @@ func (i intVal) More(v Value) bool {
 	return i > v.(intVal)
 }
 
+func (i intVal) Equal(v Value) bool {
+	return i == v.(intVal)
+}
+
 type stringVal string
 
 func (i stringVal) Less(v Value) bool {
@@ -22,6 +26,10 @@ func (i stringVal) Less(v Value) bool {
 
 func (i stringVal) More(v Value) bool {
 	return i > v.(stringVal)
+}
+
+func (i stringVal) Equal(v Value) bool {
+	return i == v.(stringVal)
 }
 
 //test root
@@ -74,7 +82,7 @@ func testPath(n *node) bool {
 	return ok
 }
 
-func TestIsRBtree(t *testing.T) {
+func Test_IsRBtree(t *testing.T) {
 	rb := NewRBTree()
 
 	a := []intVal{12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17}
@@ -110,6 +118,42 @@ func TestIsRBtree(t *testing.T) {
 	}
 }
 
+func Test_AscIter(t *testing.T) {
+	rb := NewRBTree()
+
+	a := []intVal{12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17}
+	res := []intVal{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
+	for _, x := range a {
+		rb.Push(x)
+	}
+
+	next := rb.AscIter()
+
+	for i := range res {
+		if v, ok := next(); !ok || v != res[i] {
+			t.Error("Fail,Except", res[i], "(", v, ")")
+		}
+	}
+}
+
+func Test_DescIter(t *testing.T) {
+	rb := NewRBTree()
+
+	a := []intVal{12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17}
+	res := []intVal{19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0}
+	for _, x := range a {
+		rb.Push(x)
+	}
+
+	next := rb.DescIter()
+
+	for i := range res {
+		if v, ok := next(); !ok || v != res[i] {
+			t.Error("Fail,Except", res[i], "(", v, ")")
+		}
+	}
+}
+
 func BenchmarkPush(b *testing.B) {
 	rb := NewRBTree()
 
@@ -128,6 +172,33 @@ func BenchmarkMix(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		rb.Pop((intVal)(i))
+	}
+
+}
+
+func BenchmarkGet(b *testing.B) {
+	rb := NewRBTree()
+
+	for i := 0; i < 1000000; i++ {
+		rb.Push((intVal)(i))
+	}
+
+	for i := 0; i < b.N; i++ {
+		_, _ = rb.Get((intVal)(i))
+	}
+
+}
+
+func BenchmarkIterator(b *testing.B) {
+	rb := NewRBTree()
+	for i := 0; i < 10000000; i++ {
+		rb.Push((intVal)(i))
+	}
+
+	b.N = 10000000
+	next := rb.AscIter()
+	for i := 0; i < b.N; i++ {
+		next()
 	}
 
 }
