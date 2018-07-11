@@ -2,7 +2,7 @@
 
 This package contains differnt data structures which golang does not provide:
  
- - Deque
+ - [Deque](/doc/deque.md)
     
 ```
 goos: linux
@@ -12,7 +12,8 @@ BenchmarkPushback   20000000           163 ns/op
 BenchmarkPush       10000000           218 ns/op
 
 ```
-
- - RBtree
- - Stack
- - ACDAT
+ - [Stack](/doc/stack.md)
+ - [RBtree](/doc/rbtree.md)
+ - [TreeMap](/doc/treemap.md)
+ - [Entry](/doc/entry.md)
+ - [acDAT](/doc/acdat.md)
