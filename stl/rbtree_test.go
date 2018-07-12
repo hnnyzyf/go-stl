@@ -14,10 +14,6 @@ func (i intVal) More(v Value) bool {
 	return i > v.(intVal)
 }
 
-func (i intVal) Equal(v Value) bool {
-	return i == v.(intVal)
-}
-
 type stringVal string
 
 func (i stringVal) Less(v Value) bool {
@@ -26,10 +22,6 @@ func (i stringVal) Less(v Value) bool {
 
 func (i stringVal) More(v Value) bool {
 	return i > v.(stringVal)
-}
-
-func (i stringVal) Equal(v Value) bool {
-	return i == v.(stringVal)
 }
 
 //test root
@@ -127,7 +119,7 @@ func Test_AscIter(t *testing.T) {
 		rb.Push(x)
 	}
 
-	next := rb.AscIter()
+	next := rb.asc()
 
 	for i := range res {
 		if v, ok := next(); !ok || v != res[i] {
@@ -145,7 +137,7 @@ func Test_DescIter(t *testing.T) {
 		rb.Push(x)
 	}
 
-	next := rb.DescIter()
+	next := rb.desc()
 
 	for i := range res {
 		if v, ok := next(); !ok || v != res[i] {
@@ -196,7 +188,7 @@ func BenchmarkIterator(b *testing.B) {
 	}
 
 	b.N = 10000000
-	next := rb.AscIter()
+	next := rb.asc()
 	for i := 0; i < b.N; i++ {
 		next()
 	}

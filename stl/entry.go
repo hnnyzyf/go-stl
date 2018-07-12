@@ -1,5 +1,7 @@
 package stl
 
+type Pair = Entry
+
 type Entry interface {
 	Value
 	GetKey() interface{}

@@ -41,21 +41,14 @@ func (t *TreeMap) Get(e Entry) (interface{}, bool) {
 	}
 }
 
-//Get will return value if exists a key or nil if  not exist
+//Iterator will return a Iterator
 func (t *TreeMap) Iterator(isAsc bool) func() (Entry, bool) {
-	if isAsc {
-		next := t.r.AscIter()
-		return func() (Entry, bool) {
-			n, ok := next()
-			return n.(Entry), ok
-		}
-	} else {
-		next := t.r.DescIter()
-		return func() (Entry, bool) {
-			n, ok := next()
-			return n.(Entry), ok
-		}
+	next := t.r.Iterator(isAsc)
+	return func() (Entry, bool) {
+		n, ok := next()
+		return n.(Entry), ok
 	}
+
 }
 
 //Len return the size of rbtree

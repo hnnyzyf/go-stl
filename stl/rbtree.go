@@ -170,8 +170,17 @@ func (r *RBTree) Get(val Value) (Value, bool) {
 	}
 }
 
+//Iterator will return a iterator
+func (r *RBtree) Iterator(isAsc bool) func() (Value, bool) {
+	if isAsc {
+		return r.asc()
+	} else {
+		return r.desc()
+	}
+}
+
 //Next will return a function closure
-func (r *RBTree) AscIter() func() (Value, bool) {
+func (r *RBTree) asc() func() (Value, bool) {
 	//create a Stack and add the first element
 	s := NewStack()
 	curr := r.root
@@ -194,7 +203,7 @@ func (r *RBTree) AscIter() func() (Value, bool) {
 }
 
 //Next will return a function closure
-func (r *RBTree) DescIter() func() (Value, bool) {
+func (r *RBTree) desc() func() (Value, bool) {
 	//create a Stack and add the first element
 	s := NewStack()
 	curr := r.root
