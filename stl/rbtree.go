@@ -171,7 +171,7 @@ func (r *RBTree) Get(val Value) (Value, bool) {
 }
 
 //Iterator will return a iterator
-func (r *RBtree) Iterator(isAsc bool) func() (Value, bool) {
+func (r *RBTree) Iterator(isAsc bool) func() (Value, bool) {
 	if isAsc {
 		return r.asc()
 	} else {

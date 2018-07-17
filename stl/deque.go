@@ -64,86 +64,6 @@ func NewDeque() *Deque {
 	}
 }
 
-//reallocmmap malloc memory and revoke memory
-func (d *Deque) reallocmmap() {
-
-	//end has no space and begin has space
-	if d.end.chunck == len(d.mmap)-1 && d.begin.chunck >= 1 {
-		//cal the offset
-		offset := (d.begin.chunck + 1) / 2
-
-		//copy all between d.begin.chunck and d.end.chunck
-		copy(d.mmap[d.begin.chunck-offset:d.end.chunck+1-offset], d.mmap[d.begin.chunck:d.end.chunck+1])
-
-		//set nil
-		for i := range d.mmap[len(d.mmap)-offset:] {
-			d.mmap[i+len(d.mmap)-offset] = nil
-		}
-
-		//reindex
-		d.begin.chunck -= offset
-		d.end.chunck -= offset
-
-		//begin has no space and end has space
-	} else if d.begin.chunck == 0 && d.end.chunck <= len(d.mmap)-2 {
-
-		//cal the offset
-		offset := (len(d.mmap) - d.end.chunck) / 2
-
-		//copy all between d.begin.chunck and d.end.chunck
-		copy(d.mmap[offset:d.end.chunck+offset+1], d.mmap[:d.end.chunck+1])
-
-		//set nil
-		for i := range d.mmap[:offset] {
-			d.mmap[i] = nil
-		}
-
-		//reindex
-		d.begin.chunck += offset
-		d.end.chunck += offset
-
-	} else if d.end.chunck == len(d.mmap)-1 && d.begin.chunck == 0 {
-
-		//we need to relloc a new map,add two node
-		var mmap []chunck
-
-		//if size of d.mmap is smaller than 1024,we double every time
-		//if size of d.mmap is bigger than 1024,we add 25% every time
-		if len(d.mmap) < 1024 {
-			mmap = make([]chunck, 2*len(d.mmap))
-		} else {
-			mmap = make([]chunck, len(d.mmap)/4+len(d.mmap))
-		}
-
-		//cal offset
-		offset := float64(len(mmap)-len(d.mmap)) / 2
-		d.begin.chunck = int(math.Floor(offset))
-		d.end.chunck = len(d.mmap) + int(math.Ceil(offset)) - 1
-
-		//copy all into mmap
-		copy(mmap[d.begin.chunck:d.end.chunck+1], d.mmap)
-
-		d.mmap = mmap
-
-		//revoke unused memory when there are only half chuncks have been used
-	} else if d.end.chunck-d.begin.chunck < len(d.mmap)/2 && len(d.mmap) > MapSize {
-		//new mmap
-		mmap := make([]chunck, (d.end.chunck - d.begin.chunck + 3))
-
-		//copy
-		copy(mmap[1:len(mmap)-1], d.mmap[d.begin.chunck:d.end.chunck+1])
-
-		//reindex
-		d.begin.chunck = 1
-		d.end.chunck = len(mmap) - 2
-
-		d.mmap = mmap
-	} else {
-		//do nothing
-	}
-
-}
-
 //PushBack add a new val in the back
 func (d *Deque) PushBack(val interface{}) {
 	//realloc if need
@@ -243,4 +163,92 @@ func (d *Deque) End() *iterator {
 
 func (d *Deque) Get(i *iterator) interface{} {
 	return d.mmap[i.chunck][i.index]
+}
+
+func (d *Deque) Len() int {
+	return ChunckSize*(d.end.chunck-d.begin.chunck-1) + (ChunckSize - d.begin.index) + (d.end.index + 1)
+}
+
+func (d *Deque) IsEmpty() bool {
+	return d.end.chunck < d.begin.chunck
+}
+
+//reallocmmap malloc memory and revoke memory
+func (d *Deque) reallocmmap() {
+
+	//end has no space and begin has space
+	if d.end.chunck == len(d.mmap)-1 && d.begin.chunck >= 1 {
+		//cal the offset
+		offset := (d.begin.chunck + 1) / 2
+
+		//copy all between d.begin.chunck and d.end.chunck
+		copy(d.mmap[d.begin.chunck-offset:d.end.chunck+1-offset], d.mmap[d.begin.chunck:d.end.chunck+1])
+
+		//set nil
+		for i := range d.mmap[len(d.mmap)-offset:] {
+			d.mmap[i+len(d.mmap)-offset] = nil
+		}
+
+		//reindex
+		d.begin.chunck -= offset
+		d.end.chunck -= offset
+
+		//begin has no space and end has space
+	} else if d.begin.chunck == 0 && d.end.chunck <= len(d.mmap)-2 {
+
+		//cal the offset
+		offset := (len(d.mmap) - d.end.chunck) / 2
+
+		//copy all between d.begin.chunck and d.end.chunck
+		copy(d.mmap[offset:d.end.chunck+offset+1], d.mmap[:d.end.chunck+1])
+
+		//set nil
+		for i := range d.mmap[:offset] {
+			d.mmap[i] = nil
+		}
+
+		//reindex
+		d.begin.chunck += offset
+		d.end.chunck += offset
+
+	} else if d.end.chunck == len(d.mmap)-1 && d.begin.chunck == 0 {
+
+		//we need to relloc a new map,add two node
+		var mmap []chunck
+
+		//if size of d.mmap is smaller than 1024,we double every time
+		//if size of d.mmap is bigger than 1024,we add 25% every time
+		if len(d.mmap) < 1024 {
+			mmap = make([]chunck, 2*len(d.mmap))
+		} else {
+			mmap = make([]chunck, len(d.mmap)/4+len(d.mmap))
+		}
+
+		//cal offset
+		offset := float64(len(mmap)-len(d.mmap)) / 2
+		d.begin.chunck = int(math.Floor(offset))
+		d.end.chunck = len(d.mmap) + int(math.Ceil(offset)) - 1
+
+		//copy all into mmap
+		copy(mmap[d.begin.chunck:d.end.chunck+1], d.mmap)
+
+		d.mmap = mmap
+
+		//revoke unused memory when there are only half chuncks have been used
+	} else if d.end.chunck-d.begin.chunck < len(d.mmap)/2 && len(d.mmap) > MapSize {
+		//new mmap
+		mmap := make([]chunck, (d.end.chunck - d.begin.chunck + 3))
+
+		//copy
+		copy(mmap[1:len(mmap)-1], d.mmap[d.begin.chunck:d.end.chunck+1])
+
+		//reindex
+		d.begin.chunck = 1
+		d.end.chunck = len(mmap) - 2
+
+		d.mmap = mmap
+	} else {
+		//do nothing
+	}
+
 }

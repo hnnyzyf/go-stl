@@ -33,6 +33,9 @@ func (t *TreeMap) Delete(e Entry) {
 
 //Get will return value if exists a key or nil if  not exist
 func (t *TreeMap) Get(e Entry) (interface{}, bool) {
+	if t.Len() == 0 {
+		return nil, false
+	}
 	//find a key
 	if n := t.r.find(e.(Value)); n != nil {
 		return n.val.(Entry).GetValue(), true
@@ -45,8 +48,11 @@ func (t *TreeMap) Get(e Entry) (interface{}, bool) {
 func (t *TreeMap) Iterator(isAsc bool) func() (Entry, bool) {
 	next := t.r.Iterator(isAsc)
 	return func() (Entry, bool) {
-		n, ok := next()
-		return n.(Entry), ok
+		if n, ok := next(); ok {
+			return n.(Entry), ok
+		} else {
+			return nil, false
+		}
 	}
 
 }

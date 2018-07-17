@@ -44,6 +44,10 @@ func (e *BoolEntry) GetValue() interface{} {
 	return e.v
 }
 
+func (e *BoolEntry) Key() bool {
+	return e.k
+}
+
 //String Entry
 type StringEntry struct {
 	k string
@@ -68,6 +72,10 @@ func (e *StringEntry) GetKey() interface{} {
 
 func (e *StringEntry) GetValue() interface{} {
 	return e.v
+}
+
+func (e *StringEntry) Key() string {
+	return e.k
 }
 
 //Uint64 Entry
@@ -96,6 +104,40 @@ func (e *Uint64Entry) GetValue() interface{} {
 	return e.v
 }
 
+func (e *Uint64Entry) Key() uint64 {
+	return e.k
+}
+
+//Uint64 Entry
+type IntEntry struct {
+	k int
+	v interface{}
+}
+
+func NewIntEntry(k int, v interface{}) *IntEntry {
+	return &IntEntry{k, v}
+}
+
+func (e *IntEntry) Less(v Value) bool {
+	return e.k < v.(*IntEntry).k
+}
+
+func (e *IntEntry) More(v Value) bool {
+	return e.k > v.(*IntEntry).k
+}
+
+func (e *IntEntry) GetKey() interface{} {
+	return e.k
+}
+
+func (e *IntEntry) GetValue() interface{} {
+	return e.v
+}
+
+func (e *IntEntry) Key() int {
+	return e.k
+}
+
 //float64 Entry
 type Float64Entry struct {
 	k float64
@@ -122,6 +164,10 @@ func (e *Float64Entry) GetValue() interface{} {
 	return e.v
 }
 
+func (e *Float64Entry) Key() float64 {
+	return e.k
+}
+
 //rune Entry
 type RuneEntry struct {
 	k rune
@@ -146,4 +192,8 @@ func (e *RuneEntry) GetKey() interface{} {
 
 func (e *RuneEntry) GetValue() interface{} {
 	return e.v
+}
+
+func (e *RuneEntry) Key() rune {
+	return e.k
 }

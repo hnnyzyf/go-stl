@@ -36,6 +36,42 @@ func Test_Back(t *testing.T) {
 	}
 }
 
+func Test_Len(t *testing.T) {
+	d := NewDeque()
+	for i := 0; i < 100; i++ {
+		d.PushBack(i)
+	}
+
+	if d.Len() != 100 {
+		t.Error("Fail!Expect 100(", d.Len(), ")")
+	}
+
+	for i := 0; i < 50; i++ {
+		d.PopFront()
+	}
+
+	if d.Len() != 50 {
+		t.Error("Fail!Expect 50(", d.Len(), ")")
+	}
+
+	for i := 0; i < 50; i++ {
+		d.PopBack()
+	}
+
+	if d.Len() != 0 {
+		t.Error("Fail!Expect 0(", d.Len(), ")")
+	}
+
+	for i := 0; i < 50; i++ {
+		d.PopBack()
+	}
+
+	if d.Len() != 0 {
+		t.Error("Fail!Expect 0(", d.Len(), ")")
+	}
+
+}
+
 func BenchmarkPushFront(b *testing.B) {
 	d := NewDeque()
 	for i := 0; i < b.N; i++ {
