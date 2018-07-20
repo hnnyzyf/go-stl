@@ -21,8 +21,8 @@ var dequePool = &sync.Pool{
 type Deque struct {
 	mmap []chunck
 
-	begin *diterator
-	end   *diterator
+	begin *Diterator
+	end   *Diterator
 }
 
 //the Deque is a double-ended queue
@@ -31,11 +31,11 @@ func NewDeque() *Deque {
 	return &Deque{
 		mmap: make([]chunck, MapSize),
 
-		begin: &diterator{
+		begin: &Diterator{
 			chunck: (MapSize + 1) / 2,
 			index:  0,
 		},
-		end: &diterator{
+		end: &Diterator{
 			chunck: (MapSize - 1) / 2,
 			index:  ChunckSize - 1,
 		},
@@ -125,21 +125,21 @@ func (d *Deque) PopFront() (interface{}, bool) {
 	return nil, false
 }
 
-func (d *Deque) Begin() *diterator {
-	return &diterator{
+func (d *Deque) Begin() *Diterator {
+	return &Diterator{
 		chunck: d.begin.chunck,
 		index:  d.begin.index,
 	}
 }
 
-func (d *Deque) End() *diterator {
-	return &diterator{
+func (d *Deque) End() *Diterator {
+	return &Diterator{
 		chunck: d.end.chunck,
 		index:  d.end.index,
 	}
 }
 
-func (d *Deque) Get(i *diterator) interface{} {
+func (d *Deque) Get(i *Diterator) interface{} {
 	return d.mmap[i.chunck][i.index]
 }
 
@@ -238,22 +238,22 @@ func (d *Deque) reallocmmap() {
 }
 
 //the iterator of deque
-type diterator struct {
+type Diterator struct {
 	chunck int
 	index  int
 }
 
-//next return next diterator
-func (i *diterator) Next() {
+//next return next Diterator
+func (i *Diterator) Next() {
 	i.chunck, i.index = i.chunck+(i.index+1)/ChunckSize, (i.index+1)%ChunckSize
 }
 
-//next return next diterator
-func (i *diterator) Last() {
+//next return next Diterator
+func (i *Diterator) Last() {
 	i.chunck, i.index = i.chunck+(i.index-ChunckSize)/ChunckSize, (i.index-1+ChunckSize)%ChunckSize
 }
 
-func (i *diterator) Equal(r Iterator) bool {
-	o := r.(*diterator)
+func (i *Diterator) Equal(r Iterator) bool {
+	o := r.(*Diterator)
 	return i.chunck == o.chunck && i.index == o.index
 }

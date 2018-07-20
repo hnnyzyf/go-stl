@@ -170,20 +170,20 @@ func (r *RBTree) Get(val Value) (Value, bool) {
 	}
 }
 
-func (r *RBTree) Begin() *riterator {
+func (r *RBTree) Begin() *Riterator {
 	curr := r.root
 	for curr.l != nil {
 		curr = curr.l
 	}
-	return newriterator(curr, r.root)
+	return newRiterator(curr, r.root)
 }
 
-func (r *RBTree) End() *riterator {
+func (r *RBTree) End() *Riterator {
 	curr := r.root
 	for curr.r != nil {
 		curr = curr.r
 	}
-	return newriterator(curr, r.root)
+	return newRiterator(curr, r.root)
 }
 
 //Len will return size of rbtree
@@ -577,20 +577,20 @@ func (r *RBTree) IsRBTree(testroot Hook, testRedNode Hook, testPath Hook) (bool,
 }
 
 //the iterator of RBTree
-type riterator struct {
+type Riterator struct {
 	n    *node
 	root *node
 }
 
-func newriterator(n *node, root *node) *riterator {
-	return &riterator{
+func newRiterator(n *node, root *node) *Riterator {
+	return &Riterator{
 		n:    n,
 		root: root,
 	}
 }
 
 //mid order
-func (i *riterator) Next() {
+func (i *Riterator) Next() {
 	curr := i.n
 	//have right node
 	if curr.r != nil {
@@ -627,7 +627,7 @@ func (i *riterator) Next() {
 }
 
 //back order
-func (i *riterator) Last() {
+func (i *Riterator) Last() {
 	curr := i.n
 	//have left node
 	if curr.l != nil {
@@ -662,10 +662,10 @@ func (i *riterator) Last() {
 	i.n = curr
 }
 
-func (i *riterator) Equal(res *riterator) bool {
+func (i *Riterator) Equal(res *Riterator) bool {
 	return i.n == res.n
 }
 
-func (i *riterator) Value() Value {
+func (i *Riterator) Value() Value {
 	return i.n.val
 }

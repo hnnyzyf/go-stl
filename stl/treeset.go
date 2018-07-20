@@ -22,11 +22,11 @@ func (s *TreeSet) Erase(val Value) {
 }
 
 //Iterator will return a Iterator
-func (s *TreeSet) Begin() *riterator {
+func (s *TreeSet) Begin() *Riterator {
 	return s.r.Begin()
 }
 
-func (s *TreeSet) End() *riterator {
+func (s *TreeSet) End() *Riterator {
 	return s.r.End()
 }
 

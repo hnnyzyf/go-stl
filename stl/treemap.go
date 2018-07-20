@@ -45,11 +45,11 @@ func (t *TreeMap) Get(e Entry) (interface{}, bool) {
 }
 
 //Iterator will return a Iterator
-func (t *TreeMap) Begin() *riterator {
+func (t *TreeMap) Begin() *Riterator {
 	return t.r.Begin()
 }
 
-func (t *TreeMap) End() *riterator {
+func (t *TreeMap) End() *Riterator {
 	return t.r.End()
 }
 

@@ -41,10 +41,18 @@ BenchmarkPut     2000000           919 ns/op
 BenchmarkGet     1000000          1111 ns/op
 
 ```
- - [Entry](/doc/entry.md)
+
+ - [Set](/doc/rbtree.md)
 
   ```
-No Test
+goos: linux
+goarch: amd64
+BenchmarkPush        2000000           699 ns/op
+BenchmarkMix         1000000          1054 ns/op
+BenchmarkGet         1000000          1068 ns/op
+BenchmarkIterator   10000000          1087 ns/op
 
 ```
+ - [Entry](/doc/entry.md)
+
  - [acDAT](/doc/acdat.md)
