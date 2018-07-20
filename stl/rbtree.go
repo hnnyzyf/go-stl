@@ -170,59 +170,20 @@ func (r *RBTree) Get(val Value) (Value, bool) {
 	}
 }
 
-//Iterator will return a iterator
-func (r *RBTree) Iterator(isAsc bool) func() (Value, bool) {
-	if isAsc {
-		return r.asc()
-	} else {
-		return r.desc()
+func (r *RBTree) Begin() *riterator {
+	curr := r.root
+	for curr.l != nil {
+		curr = curr.l
 	}
+	return newriterator(curr, r.root)
 }
 
-//Next will return a function closure
-func (r *RBTree) asc() func() (Value, bool) {
-	//create a Stack and add the first element
-	s := NewStack()
+func (r *RBTree) End() *riterator {
 	curr := r.root
-	next := func() (Value, bool) {
-		for curr != nil {
-			s.Push(curr)
-			curr = curr.l
-		}
-		//if curr does not have a left child,pop stack
-		if e, ok := s.Pop(); ok {
-			n := e.(*node)
-			curr = n.r
-			return n.val, true
-		} else {
-			//only happen when all node have been visited
-			return nil, false
-		}
+	for curr.r != nil {
+		curr = curr.r
 	}
-	return next
-}
-
-//Next will return a function closure
-func (r *RBTree) desc() func() (Value, bool) {
-	//create a Stack and add the first element
-	s := NewStack()
-	curr := r.root
-	next := func() (Value, bool) {
-		for curr != nil {
-			s.Push(curr)
-			curr = curr.r
-		}
-		//if curr does not have a right child,pop stack
-		if e, ok := s.Pop(); ok {
-			n := e.(*node)
-			curr = n.l
-			return n.val, true
-		} else {
-			//only happen when all node have been visited
-			return nil, false
-		}
-	}
-	return next
+	return newriterator(curr, r.root)
 }
 
 //Len will return size of rbtree
@@ -613,4 +574,98 @@ func (r *RBTree) IsRBTree(testroot Hook, testRedNode Hook, testPath Hook) (bool,
 	}
 
 	return true, nil
+}
+
+//the iterator of RBTree
+type riterator struct {
+	n    *node
+	root *node
+}
+
+func newriterator(n *node, root *node) *riterator {
+	return &riterator{
+		n:    n,
+		root: root,
+	}
+}
+
+//mid order
+func (i *riterator) Next() {
+	curr := i.n
+	//have right node
+	if curr.r != nil {
+		curr = curr.r
+		for curr.l != nil {
+			curr = curr.l
+		}
+		//node does not have right node,next node is its parent
+	} else if curr.p != nil && curr.p.l == curr {
+		curr = curr.p
+		//node does not have right node,next node is its parent
+	} else if curr.p != nil && curr.p.r == curr {
+		curr = curr.p
+		for curr.p != nil && curr.p.r == curr {
+			curr = curr.p
+		}
+
+		//left child of root
+		if curr.p != nil {
+			curr = curr.p
+		} else {
+			//right child of root
+			curr = i.n
+		}
+	} else if curr.p == nil {
+		//root does not have right node and right node is nil
+		//donothing
+	} else {
+		panic("Impossible state")
+	}
+
+	i.n = curr
+
+}
+
+//back order
+func (i *riterator) Last() {
+	curr := i.n
+	//have left node
+	if curr.l != nil {
+		curr = curr.l
+		for curr.r != nil {
+			curr = curr.r
+		}
+		//node does not have right node,next node is its parent
+	} else if curr.p != nil && curr.p.r == curr {
+		curr = curr.p
+		//node does not have right node,next node is its parent
+	} else if curr.p != nil && curr.p.l == curr {
+		curr = curr.p
+		for curr.p != nil && curr.p.l == curr {
+			curr = curr.p
+		}
+
+		//left child of root
+		if curr.p != nil {
+			curr = curr.p
+		} else {
+			//right child of root
+			curr = i.n
+		}
+	} else if curr.p == nil {
+		//root does not have right node and right node is nil
+		//donothing
+	} else {
+		panic("Impossible state")
+	}
+
+	i.n = curr
+}
+
+func (i *riterator) Equal(res *riterator) bool {
+	return i.n == res.n
+}
+
+func (i *riterator) Value() Value {
+	return i.n.val
 }

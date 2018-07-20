@@ -113,18 +113,20 @@ func Test_IsRBtree(t *testing.T) {
 func Test_AscIter(t *testing.T) {
 	rb := NewRBTree()
 
-	a := []intVal{12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17}
+	a := []intVal{12, 1, 9, 2, 11, 7, 0, 19, 4, 15, 18, 5, 14, 13, 10, 16, 6, 3, 8, 17}
 	res := []intVal{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19}
 	for _, x := range a {
 		rb.Push(x)
 	}
 
-	next := rb.asc()
-
-	for i := range res {
-		if v, ok := next(); !ok || v != res[i] {
+	e := rb.End()
+	i := 0
+	for b := rb.Begin(); !b.Equal(e); b.Next() {
+		v := b.Value().(intVal)
+		if v != res[i] {
 			t.Error("Fail,Except", res[i], "(", v, ")")
 		}
+		i++
 	}
 }
 
@@ -137,12 +139,14 @@ func Test_DescIter(t *testing.T) {
 		rb.Push(x)
 	}
 
-	next := rb.desc()
-
-	for i := range res {
-		if v, ok := next(); !ok || v != res[i] {
+	b := rb.Begin()
+	i := 0
+	for e := rb.End(); !e.Equal(b); e.Last() {
+		v := e.Value().(intVal)
+		if v != res[i] {
 			t.Error("Fail,Except", res[i], "(", v, ")")
 		}
+		i++
 	}
 }
 
@@ -188,9 +192,10 @@ func BenchmarkIterator(b *testing.B) {
 	}
 
 	b.N = 10000000
-	next := rb.asc()
+	iter := rb.Begin()
+
 	for i := 0; i < b.N; i++ {
-		next()
+		iter.Next()
 	}
 
 }

@@ -18,33 +18,11 @@ var dequePool = &sync.Pool{
 	},
 }
 
-//iterator is the index of bucket
-type iterator struct {
-	chunck int
-	index  int
-}
-
-//next return next iterator
-func (i *iterator) Next() {
-	i.chunck, i.index = i.chunck+(i.index+1)/ChunckSize, (i.index+1)%ChunckSize
-}
-
-func (i *iterator) Less(o *iterator) bool {
-	if i.chunck < o.chunck {
-		return true
-	} else if i.chunck == o.chunck && i.index < o.index {
-		return true
-	} else {
-		return false
-	}
-
-}
-
 type Deque struct {
 	mmap []chunck
 
-	begin *iterator
-	end   *iterator
+	begin *diterator
+	end   *diterator
 }
 
 //the Deque is a double-ended queue
@@ -53,11 +31,11 @@ func NewDeque() *Deque {
 	return &Deque{
 		mmap: make([]chunck, MapSize),
 
-		begin: &iterator{
+		begin: &diterator{
 			chunck: (MapSize + 1) / 2,
 			index:  0,
 		},
-		end: &iterator{
+		end: &diterator{
 			chunck: (MapSize - 1) / 2,
 			index:  ChunckSize - 1,
 		},
@@ -110,7 +88,7 @@ func (d *Deque) PopBack() (interface{}, bool) {
 		val := d.mmap[d.end.chunck][d.end.index]
 		chunck, index := d.end.chunck+(d.end.index-ChunckSize)/ChunckSize, (d.end.index-1+ChunckSize)%ChunckSize
 
-		//if old chunck does not been used ,revoke it
+		//if old chunck has never been used ,try to revoke it
 		if chunck != d.end.chunck {
 			dequePool.Put(d.mmap[d.end.chunck])
 			d.mmap[d.end.chunck] = nil
@@ -133,7 +111,7 @@ func (d *Deque) PopFront() (interface{}, bool) {
 		val := d.mmap[d.begin.chunck][d.begin.index]
 		chunck, index := d.begin.chunck+(d.begin.index+1)/ChunckSize, (d.begin.index+1)%ChunckSize
 
-		//if old chunck does not been used ,revoke it
+		//if old chunck has never been used ,try to revoke it
 		if chunck != d.begin.chunck {
 			dequePool.Put(d.mmap[d.begin.chunck])
 			d.mmap[d.begin.chunck] = nil
@@ -147,21 +125,21 @@ func (d *Deque) PopFront() (interface{}, bool) {
 	return nil, false
 }
 
-func (d *Deque) Begin() *iterator {
-	return &iterator{
+func (d *Deque) Begin() *diterator {
+	return &diterator{
 		chunck: d.begin.chunck,
 		index:  d.begin.index,
 	}
 }
 
-func (d *Deque) End() *iterator {
-	return &iterator{
+func (d *Deque) End() *diterator {
+	return &diterator{
 		chunck: d.end.chunck,
 		index:  d.end.index,
 	}
 }
 
-func (d *Deque) Get(i *iterator) interface{} {
+func (d *Deque) Get(i *diterator) interface{} {
 	return d.mmap[i.chunck][i.index]
 }
 
@@ -170,7 +148,13 @@ func (d *Deque) Len() int {
 }
 
 func (d *Deque) IsEmpty() bool {
-	return d.end.chunck < d.begin.chunck
+	if d.end.chunck < d.begin.chunck {
+		return true
+	} else if d.end.chunck == d.begin.chunck && d.begin.index > d.end.index {
+		return true
+	} else {
+		return false
+	}
 }
 
 //reallocmmap malloc memory and revoke memory
@@ -251,4 +235,25 @@ func (d *Deque) reallocmmap() {
 		//do nothing
 	}
 
+}
+
+//the iterator of deque
+type diterator struct {
+	chunck int
+	index  int
+}
+
+//next return next diterator
+func (i *diterator) Next() {
+	i.chunck, i.index = i.chunck+(i.index+1)/ChunckSize, (i.index+1)%ChunckSize
+}
+
+//next return next diterator
+func (i *diterator) Last() {
+	i.chunck, i.index = i.chunck+(i.index-ChunckSize)/ChunckSize, (i.index-1+ChunckSize)%ChunckSize
+}
+
+func (i *diterator) Equal(r Iterator) bool {
+	o := r.(*diterator)
+	return i.chunck == o.chunck && i.index == o.index
 }

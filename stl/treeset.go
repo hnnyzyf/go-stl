@@ -22,8 +22,12 @@ func (s *TreeSet) Erase(val Value) {
 }
 
 //Iterator will return a Iterator
-func (s *TreeSet) Iterator(isAsc bool) func() (Value, bool) {
-	return s.r.Iterator(isAsc)
+func (s *TreeSet) Begin() *riterator {
+	return s.r.Begin()
+}
+
+func (s *TreeSet) End() *riterator {
+	return s.r.End()
 }
 
 //Len return the size of rbtree

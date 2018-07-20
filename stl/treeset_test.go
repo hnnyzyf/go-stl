@@ -1,22 +1,25 @@
 package stl
 
 import (
-	"fmt"
 	"testing"
 )
 
 func Test_Iterator(t *testing.T) {
-	a := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-
-	s := NewTreeSet()
+	a := []int{9, 2, 3, 4, 5, 1, 7, 8, 6}
+	res := []IntVal{1, 2, 3, 4, 5, 6, 7, 8, 9}
+	tree := NewTreeSet()
 
 	for i := range a {
-		s.Insert(IntVal(a[i]))
+		tree.Insert(IntVal(a[i]))
 	}
 
-	next := s.Iterator(true)
-
-	for e, ok := next(); ok; e, ok = next() {
-		fmt.Println(e)
+	e := tree.End()
+	i := 0
+	for b := tree.Begin(); !b.Equal(e); b.Next() {
+		v := b.Value().(IntVal)
+		if v != res[i] {
+			t.Error("Fail,Expect ", res[i], "(", v, ")")
+		}
+		i++
 	}
 }

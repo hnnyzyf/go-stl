@@ -55,15 +55,17 @@ func Test_Put(t *testing.T) {
 		tree.Put(a[i])
 	}
 
-	next := tree.Iterator(true)
+	e := tree.End()
 
-	for i := range res {
-		n, ok := next()
+	i := 0
+	for b := tree.Begin(); !b.Equal(e); b.Next() {
+		n := b.Value().(Entry)
 		k := n.GetKey().(int)
 		v := n.GetValue().(int)
-		if k != res[i].k || v != res[i].v || !ok {
+		if k != res[i].k || v != res[i].v {
 			t.Error("Fail,Expect ", res[i].k, ":", res[i].v, "(", k, ":", v, ")")
 		}
+		i++
 	}
 
 }
@@ -99,15 +101,17 @@ func Test_Delete(t *testing.T) {
 		tree.Delete(del[i])
 	}
 
-	next := tree.Iterator(true)
+	e := tree.End()
 
-	for i := range res {
-		n, ok := next()
+	i := 0
+	for b := tree.Begin(); !b.Equal(e); b.Next() {
+		n := b.Value().(Entry)
 		k := n.GetKey().(int)
 		v := n.GetValue().(int)
-		if k != res[i].k || v != res[i].v || !ok {
+		if k != res[i].k || v != res[i].v {
 			t.Error("Fail,Expect ", res[i].k, ":", res[i].v, "(", k, ":", v, ")")
 		}
+		i++
 	}
 
 }

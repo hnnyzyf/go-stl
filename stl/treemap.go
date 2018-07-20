@@ -45,16 +45,12 @@ func (t *TreeMap) Get(e Entry) (interface{}, bool) {
 }
 
 //Iterator will return a Iterator
-func (t *TreeMap) Iterator(isAsc bool) func() (Entry, bool) {
-	next := t.r.Iterator(isAsc)
-	return func() (Entry, bool) {
-		if n, ok := next(); ok {
-			return n.(Entry), ok
-		} else {
-			return nil, false
-		}
-	}
+func (t *TreeMap) Begin() *riterator {
+	return t.r.Begin()
+}
 
+func (t *TreeMap) End() *riterator {
+	return t.r.End()
 }
 
 //Len return the size of rbtree
