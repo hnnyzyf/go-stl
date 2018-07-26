@@ -1,183 +1,196 @@
 package deque
 
 import (
-	//"fmt"
+	. "gopkg.in/check.v1"
 	"testing"
 )
 
-func Test_Front(t *testing.T) {
-	d := New()
-	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	res := []int{9, 8, 7, 6, 5, 4, 3, 2, 1}
+// Hook up gocheck into the "go test" runner.
+func Test(t *testing.T) { TestingT(t) }
 
-	for i := range data {
-		d.PushFront(data[i])
-	}
+type MySuite struct {
+	d *Deque
+}
 
-	for i := range res {
-		if v, ok := d.PopFront(); v != res[i] || !ok {
-			t.Error("Except:", res[i], "(", v, ")")
-		}
+var _ = Suite(&MySuite{d: New()})
+
+func (s *MySuite) pushfront(n int) {
+	for i := n - 1; i >= 0; i-- {
+		s.d.PushFront(i)
 	}
 }
 
-func Test_Back(t *testing.T) {
-	d := New()
-	data := []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-	res := []int{9, 8, 7, 6, 5, 4, 3, 2, 1}
-
-	for i := range data {
-		d.PushBack(data[i])
-	}
-
-	for i := range res {
-		if v, ok := d.PopBack(); v != res[i] || !ok {
-			t.Error("Except:", res[i], "(", v, ")")
-		}
-	}
-}
-
-func pushback(d *Deque, n int) {
+func (s *MySuite) pushback(n int) {
 	for i := 0; i < n; i++ {
-		d.PushBack(n)
+		s.d.PushBack(i)
 	}
 }
 
-func pushfront(d *Deque, n int) {
+func (s *MySuite) popfront(n int) {
 	for i := 0; i < n; i++ {
-		d.PushFront(n)
+		s.d.PopFront()
 	}
 }
 
-func popback(d *Deque, n int) {
+func (s *MySuite) popback(n int) {
 	for i := 0; i < n; i++ {
-		d.PopBack()
+		s.d.PopBack()
 	}
 }
 
-func popfront(d *Deque, n int) {
+func (s *MySuite) get(n int) interface{} {
+	return s.d.Get(n)
+}
+
+func (s *MySuite) begin() *pos {
+	return s.d.begin
+}
+
+func (s *MySuite) end() *pos {
+	return s.d.end
+}
+
+func (s *MySuite) reset() {
+	s.d = New()
+}
+
+func (s *MySuite) len() int {
+	return s.d.Len()
+}
+
+func (s *MySuite) TestPushFront(c *C) {
+	s.reset()
+	n := 1025 * ChunckSize
+	s.pushfront(n)
+	//fmt.Println(d)
 	for i := 0; i < n; i++ {
-		d.PopFront()
+		v := s.get(i)
+		c.Assert(v, Equals, i)
 	}
-}
 
-func Test_Len(t *testing.T) {
-	d := New()
-
+	s.reset()
 	data := []struct {
-		call func(*Deque, int)
-		n    int
-		len  int
-	}{
-		{pushback, 1024 * ChunckSize, 1024 * ChunckSize},
-		{popfront, 500 * ChunckSize, 524 * ChunckSize},
-		{pushfront, 101 * ChunckSize, 625 * ChunckSize},
-		{popfront, 500 * ChunckSize, 125 * ChunckSize},
-		{popback, 100 * ChunckSize, 25 * ChunckSize},
-	}
-
-	for i := range data {
-		data[i].call(d, data[i].n)
-		if d.Len() != data[i].len {
-			t.Error("Fail!Expect ", data[i].len, "(", d.Len(), ")")
-		}
-	}
-}
-
-func Test_reallocmmap(t *testing.T) {
-	d := New()
-	data := []struct {
-		i     int
+		n     int
 		begin int
 		end   int
 	}{
-		{4 * ChunckSize, 4, 7},
-		{1, 2, 6},
-		{2*ChunckSize - 1, 2, 7},
-		{1, 1, 7},
-		{ChunckSize - 1, 1, 7},
-		{1, 0, 7},
-		{ChunckSize - 1, 0, 7},
-		{1, 4, 12},
-		{4*ChunckSize - 1, 4, 15},
-		{1, 2, 14},
-		{2*ChunckSize - 1, 2, 15},
-		{1, 1, 15},
-		{ChunckSize - 1, 1, 15},
-		{1, 0, 15},
-		{ChunckSize - 1, 0, 15},
-		{1008 * ChunckSize, 0, 1023},
-		{1, 128, 1152},
+		{4 * ChunckSize, 2, 5},
+		{2 * ChunckSize, 1, 6},
+		{1 * ChunckSize, 1, 7},
+		{1 * ChunckSize, 4, 11},
+		{1024 * ChunckSize, 120, 1151},
 	}
 
 	for i := range data {
-		pushback(d, data[i].i)
-		//fmt.Println(d.begin, d.end, d.Len())
-		if d.begin.chunck != data[i].begin || d.end.chunck != data[i].end {
-			t.Error(i, ":Fail！Except ", data[i].begin, ":", data[i].end, "(", d.begin.chunck, ":", d.end.chunck, ")")
-		}
+		s.pushfront(data[i].n)
+		c.Assert(s.begin().chunck, Equals, data[i].begin)
+		c.Assert(s.end().chunck, Equals, data[i].end)
+	}
+}
+
+func (s *MySuite) TestPushBack(c *C) {
+	s.reset()
+	n := 1025 * ChunckSize
+	s.pushback(n)
+	//fmt.Println(d)
+	for i := 0; i < n; i++ {
+		v := s.get(i)
+		c.Assert(v, Equals, i)
 	}
 
-	data = []struct {
-		i     int
+	s.reset()
+	data := []struct {
+		n     int
 		begin int
 		end   int
 	}{
-		{1, 128, 1151},
-		{385*ChunckSize - 1, 128, 767},
-		{1, 160, 798},
-		//{1, 1, 643},
+		{4 * ChunckSize, 2, 5},
+		{2 * ChunckSize, 1, 6},
+		{1 * ChunckSize, 0, 6},
+		{1 * ChunckSize, 4, 11},
+		{1024 * ChunckSize, 128, 1159},
 	}
 
 	for i := range data {
-		popback(d, data[i].i)
-		//fmt.Println(d.begin, d.end, len(d.mmap), d.Len())
-		if d.begin.chunck != data[i].begin || d.end.chunck != data[i].end {
-			t.Error(i, ":Fail！Except ", data[i].begin, ":", data[i].end, "(", d.begin.chunck, ":", d.end.chunck, ")")
-		}
-	}
-
-}
-
-func BenchmarkPushFront(b *testing.B) {
-	d := New()
-	for i := 0; i < b.N; i++ {
-		d.PushFront(i)
+		s.pushback(data[i].n)
+		c.Assert(s.begin().chunck, Equals, data[i].begin)
+		c.Assert(s.end().chunck, Equals, data[i].end)
 	}
 }
 
-func BenchmarkPushBack(b *testing.B) {
-	d := New()
-	for i := 0; i < b.N; i++ {
-		d.PushBack(i)
+func (s *MySuite) TestPop(c *C) {
+	s.reset()
+	n := 10 * ChunckSize
+	p := 8 * ChunckSize
+	s.pushback(n)
+	s.popback(p)
+	for i := 0; i < n-p; i++ {
+		v := s.get(i)
+		c.Assert(v, Equals, i)
+	}
+
+	s.reset()
+	s.pushfront(n)
+	s.popfront(p)
+	for i := 0; i < n-p; i++ {
+		v := s.get(i)
+		c.Assert(v, Equals, i+p)
 	}
 }
 
-func BenchmarkPush(b *testing.B) {
-	d := New()
-	for i := 0; i < b.N; i++ {
-		d.PushFront(i)
-		d.PushBack(i)
+func (s *MySuite) TestPushPop(c *C) {
+	s.reset()
+	n := 10 * ChunckSize
+	p := 8 * ChunckSize
+	s.pushback(n)
+	s.popfront(p)
+	for i := 0; i < n-p; i++ {
+		v := s.get(i)
+		c.Assert(v, Equals, i+p)
+	}
+
+	s.reset()
+	s.pushfront(n)
+	s.popback(p)
+	for i := 0; i < n-p; i++ {
+		v := s.get(i)
+		c.Assert(v, Equals, i)
 	}
 }
 
-func BenchmarkMix(b *testing.B) {
-	d := New()
-	for i := 0; i < b.N; i++ {
-		if i%2 == 0 {
-			d.PushFront(i)
-		} else {
-			d.PushBack(i)
-		}
+func (s *MySuite) TestLen(c *C) {
+	s.reset()
 
-		if i%100 == 0 && i > 100 {
-			for j := 0; j < 60; j++ {
-				if j%2 == 0 {
-					d.PopFront()
-				} else {
-					d.PopBack()
-				}
-			}
-		}
+	data := []struct {
+		call   func(int)
+		n      int
+		length int
+	}{
+		{s.pushback, 0, 0},
+		{s.pushback, 1000 * ChunckSize, 1000 * ChunckSize},
+		{s.popback, 200 * ChunckSize, 800 * ChunckSize},
+		{s.pushfront, ChunckSize / 2, 800*ChunckSize + ChunckSize/2},
+		{s.popback, ChunckSize / 2, 800 * ChunckSize},
+		{s.popfront, 1024 * ChunckSize, 0},
+		{s.popback, 1024 * ChunckSize, 0},
+	}
+
+	for i := range data {
+		data[i].call(data[i].n)
+		c.Assert(s.len(), Equals, data[i].length)
+	}
+}
+
+func (s *MySuite) BenchmarkPushback(c *C) {
+	s.reset()
+	for i := 0; i < c.N; i++ {
+		s.d.PushBack(i)
+	}
+}
+
+func (s *MySuite) BenchmarkPushFront(c *C) {
+	s.reset()
+	for i := 0; i < c.N; i++ {
+		s.d.PushFront(i)
 	}
 }
