@@ -1,12 +1,13 @@
 package deque
 
 import (
+	//"fmt"
 	"sync"
 )
 
 const (
 	MapSize    = 8
-	ChunckSize = 4
+	ChunckSize = 128
 )
 
 type chunck []interface{}
@@ -93,9 +94,8 @@ func (d *Deque) PushBack(val interface{}) {
 //PopBack delete a new val in the back
 func (d *Deque) PopBack() (interface{}, bool) {
 	//revoke used memory if need
-	defer d.reallocmmap()
-
 	if d.Len() != 0 {
+		defer d.freemmap()
 		val := d.mmap[d.end.chunck][d.end.index]
 		chunck, index := d.end.chunck+(d.end.index-ChunckSize)/ChunckSize, (d.end.index-1+ChunckSize)%ChunckSize
 
@@ -116,9 +116,8 @@ func (d *Deque) PopBack() (interface{}, bool) {
 //PopFront delete a new val in the front
 func (d *Deque) PopFront() (interface{}, bool) {
 	//revoke used memory if need
-	//defer d.reallocmmap()
-
 	if d.Len() != 0 {
+		defer d.freemmap()
 		val := d.mmap[d.begin.chunck][d.begin.index]
 		chunck, index := d.begin.chunck+(d.begin.index+1)/ChunckSize, (d.begin.index+1)%ChunckSize
 
@@ -159,7 +158,7 @@ func (d *Deque) IsEmpty() bool {
 
 //reallocmmap malloc memory and revoke memory
 func (d *Deque) reallocmmap() {
-
+	//fmt.Println("begin", d.begin, d.end, len(d.mmap))
 	//end has no space and begin has space
 	if d.end.chunck == len(d.mmap)-1 && d.begin.chunck >= 1 {
 		//data section
@@ -177,7 +176,7 @@ func (d *Deque) reallocmmap() {
 		for i := 1; i <= offset; i++ {
 			d.mmap[d.end.chunck+i] = nil
 		}
-
+		//fmt.Println("move left", d.begin, d.end, len(d.mmap))
 		//begin has no space and end has space
 	} else if d.begin.chunck == 0 && len(d.mmap)-d.end.chunck > 1 {
 		//data section
@@ -196,6 +195,7 @@ func (d *Deque) reallocmmap() {
 		for i := 0; i < offset; i++ {
 			d.mmap[i] = nil
 		}
+		//fmt.Println("move right", d.begin, d.end, len(d.mmap))
 
 	} else if d.end.chunck == len(d.mmap)-1 && d.begin.chunck == 0 {
 
@@ -220,9 +220,15 @@ func (d *Deque) reallocmmap() {
 		copy(destionation, d.mmap)
 
 		d.mmap = mmap
-		//revoke unused memory when there are only half chuncks have been used
-	} else if d.end.chunck-d.begin.chunck < len(d.mmap)/2 && len(d.mmap) > MapSize {
+		//fmt.Println("realloc", d.begin, d.end, len(d.mmap))
+	} else {
+		//do nothing
+	}
+}
 
+//revoke unused memory when there are only half chuncks have been used
+func (d *Deque) freemmap() {
+	if d.end.chunck-d.begin.chunck < len(d.mmap)/2 && len(d.mmap) > MapSize {
 		//data section
 		data := d.mmap[d.begin.chunck : d.end.chunck+1]
 
@@ -236,8 +242,6 @@ func (d *Deque) reallocmmap() {
 		//copy
 		copy(destionation, data)
 		d.mmap = mmap
-	} else {
-		//do nothing
+		//fmt.Println("clear", d.begin, d.end, len(d.mmap))
 	}
-
 }

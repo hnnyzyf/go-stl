@@ -119,9 +119,9 @@ func (s *MySuite) TestPushBack(c *C) {
 }
 
 func (s *MySuite) TestPop(c *C) {
-	s.reset()
 	n := 10 * ChunckSize
 	p := 8 * ChunckSize
+	s.reset()
 	s.pushback(n)
 	s.popback(p)
 	for i := 0; i < n-p; i++ {
