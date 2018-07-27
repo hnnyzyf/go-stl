@@ -105,7 +105,7 @@ func findhit(begin int, end int, pattern string) {
 }
 
 func Test_parseText(t *testing.T) {
-	dictionary, err := loadDictionary("./resource/en/dictionary.txt")
+	dictionary, err := loadDictionary("./resource/cn/dictionary.txt")
 	if err != nil {
 		t.Error(err)
 	} //

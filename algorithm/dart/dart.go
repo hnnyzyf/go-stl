@@ -137,7 +137,8 @@ type Dart struct {
 	used []bool
 	//the allocSize of the dynamic array
 	allocSize int
-
+	//nextposition
+	nexPos int
 	//record keywords
 	keywords []string
 }
@@ -366,7 +367,7 @@ func (da *Dart) fetch(s *state) ([]*pair.RunePair, error) {
 
 //calculate calculate the begin
 func (da *Dart) calculate(slibings []*pair.RunePair) int {
-	begin := 0
+	begin := da.nexPos
 	maxkey := 0
 	if len(slibings) != 0 {
 		maxkey = int(slibings[len(slibings)-1].GetKey().(rune))
@@ -403,7 +404,7 @@ func (da *Dart) calculate(slibings []*pair.RunePair) int {
 			break
 		}
 	}
-
+	da.nexPos = begin
 	return begin
 }
 
