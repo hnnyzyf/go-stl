@@ -2,7 +2,8 @@ package algorithm
 
 import (
 	"errors"
-	//"fmt"
+	"io"
+
 	"github.com/hnnyzyf/go-stl/container/pair"
 	"github.com/hnnyzyf/go-stl/container/queue"
 	"github.com/hnnyzyf/go-stl/container/stack"
@@ -25,8 +26,7 @@ type state struct {
 
 	//output table,record the keyword index in input texts
 	emits *treeset.TreeSet
-
-	//the fake node id
+	//fake node
 	fake *state
 }
 
@@ -45,7 +45,7 @@ func (s *state) addEmit(keyword int) {
 //addEmits add many pattern
 func (s *state) addEmits(emits *treeset.TreeSet) error {
 	for i := emits.Begin(); i.LessEqual(emits.End()); i.Next() {
-		v := i.GetValue()
+		v := i.GetData()
 		if v == nil {
 			return errors.New("An non-empty treeset return nil data")
 		}
@@ -113,7 +113,7 @@ func (s *state) addState(c rune) (*state, error) {
 func (s *state) getMaxEmit() int {
 	//get the Max Emit
 	i := s.emits.End()
-	if v, ok := i.GetValue().(value.Int); ok {
+	if v, ok := i.GetData().(value.Int); ok {
 		return int(v)
 	} else {
 		return 0
@@ -137,8 +137,8 @@ type Dart struct {
 	used []bool
 	//the allocSize of the dynamic array
 	allocSize int
-	//nextposition
-	nexPos int
+	//nextPos recorad last begin
+	nextPos int
 	//record keywords
 	keywords []string
 }
@@ -177,26 +177,10 @@ func (da *Dart) Build(keys []string) error {
 	}
 
 	//clean
-	da.used = nil
-	da.root = nil
+	//da.used = nil
+	//da.root = nil
 	da.keywords = keys
 	return nil
-}
-
-//Mactch return true if there exists pattern
-func (da *Dart) Matches(text string) bool {
-	b := []rune(text)
-	curr := 0
-	for i := range b {
-		for !da.nextState(curr, b[i]) {
-			curr = da.fail[curr]
-		}
-		curr = da.goTo(curr, b[i])
-		if len(da.output[curr]) > 0 {
-			return true
-		}
-	}
-	return false
 }
 
 //ParseText check a text file,when hit a pattern,use callback
@@ -211,7 +195,6 @@ func (da *Dart) buildTrie(keys []string) error {
 		if err := da.addKey(key, i); err != nil {
 			return err
 		}
-		//fmt.Println(i, ":add ", key)
 	}
 
 	return nil
@@ -252,7 +235,6 @@ func (da *Dart) buildDAT() error {
 	output := stack.New()
 
 	s.Push(da.root)
-	id := 0
 	//step1:calculate check table in pre order
 	for !s.IsEmpty() {
 		n, ok := s.Pop()
@@ -263,23 +245,21 @@ func (da *Dart) buildDAT() error {
 		if !ok {
 			return errors.New("Find next state is a nil state")
 		}
-
-		//output.Push(curr)
+		output.Push(curr)
 		//get all child
 		slibings, err := da.fetch(curr)
 		if err != nil {
 			return err
 		}
+
 		//find a position for
 		begin := da.calculate(slibings)
 
 		//set check table and stack
-		//fmt.Println(id, ":Check ", curr, s.Len())
 		for i := range slibings {
 			slibling := slibings[i]
 			pos := int(slibling.GetKey().(rune)) + begin
 			da.check[pos] = begin
-
 			//set stack
 			if temp, ok := slibling.GetValue().(*state); ok {
 				temp.id = pos
@@ -288,7 +268,6 @@ func (da *Dart) buildDAT() error {
 				return errors.New("Find child state is a nil state")
 			}
 		}
-		id++
 	}
 
 	//calculate base table in post order
@@ -320,8 +299,7 @@ func (da *Dart) buildDAT() error {
 				return errors.New("The first child of A non-empty map is not nil,but it store a nil state")
 			}
 		}
-		id--
-		//fmt.Println(id," DAT:Base ", s)
+
 	}
 
 	return nil
@@ -351,11 +329,12 @@ func (da *Dart) fetch(s *state) ([]*pair.RunePair, error) {
 	slibings := make([]*pair.RunePair, 0)
 
 	if s.isFinalState() {
-		slibings = append(slibings, pair.Rune('0', s.addFakeState()))
+		slibings = append(slibings, pair.Rune(0, s.addFakeState()))
 	}
 
+	//add
 	for i := s.success.Begin(); i.LessEqual(s.success.End()); i.Next() {
-		p, ok := i.GetValue().(*pair.RunePair)
+		p, ok := i.GetData().(*pair.RunePair)
 		if !ok {
 			return nil, errors.New("Fetch an none empty map but return nil")
 		}
@@ -367,31 +346,30 @@ func (da *Dart) fetch(s *state) ([]*pair.RunePair, error) {
 
 //calculate calculate the begin
 func (da *Dart) calculate(slibings []*pair.RunePair) int {
-	begin := da.nexPos
-	maxkey := 0
-	if len(slibings) != 0 {
-		maxkey = int(slibings[len(slibings)-1].GetKey().(rune))
+	begin := da.nextPos
+	maxKey := 0
+	if len(slibings) > 0 {
+		maxKey = int(slibings[len(slibings)-1].GetKey().(rune))
 	}
+
 	//find the begin
 	for {
-		begin += 1
+		begin++
 
 		//alloc enough memory
-		pos := maxkey + begin
+		pos := maxKey + begin
 		if pos >= len(da.check) {
 			da.resize(pos + pos/4)
 		}
 
-		//if begin has been used,continue
 		if da.used[begin] {
 			continue
 		}
-
 		//find a position which check[begin+a1....an]=0
 		flag := 0
 		for i := range slibings {
 			slibing := slibings[i]
-			pos = int(slibing.GetKey().(rune)) + begin
+			pos := int(slibing.GetKey().(rune)) + begin
 			if da.check[pos] != 0 {
 				flag = 1
 				break
@@ -403,8 +381,10 @@ func (da *Dart) calculate(slibings []*pair.RunePair) int {
 			da.used[begin] = true
 			break
 		}
+
 	}
-	da.nexPos = begin
+
+	da.nextPos = begin
 	return begin
 }
 
@@ -417,7 +397,7 @@ func (da *Dart) buildAC() error {
 	q := queue.New()
 	//step 1:set the failure of all children of root to root
 	for i := da.root.success.Begin(); i.LessEqual(da.root.success.End()); i.Next() {
-		n := i.GetValue()
+		n := i.GetData()
 		if n == nil {
 			return errors.New("An none empty state has children but return nil")
 		}
@@ -444,8 +424,10 @@ func (da *Dart) buildAC() error {
 		if !ok {
 			return errors.New("It seems we insert a nil state?")
 		}
+
+		//fmt.Println("id", string(curr.c), curr.id)
 		for i := curr.success.Begin(); i.LessEqual(curr.success.End()); i.Next() {
-			entry := i.GetValue()
+			entry := i.GetData()
 			if entry == nil {
 				return errors.New("An non-empty state has children but return nil")
 			}
@@ -480,7 +462,6 @@ func (da *Dart) buildAC() error {
 			if err := temp.addEmits(fail.emits); err != nil {
 				return err
 			}
-
 			//set failure
 			da.addFailure(temp, fail)
 
@@ -506,7 +487,7 @@ func (da *Dart) addFailure(s *state, fail *state) {
 func (da *Dart) addOutput(s *state) error {
 	output := make([]int, 0)
 	for i := s.emits.Begin(); i.LessEqual(s.emits.End()); i.Next() {
-		v := i.GetValue()
+		v := i.GetData()
 		if v == nil {
 			return errors.New("An non-empty set return nil")
 		}
@@ -516,13 +497,31 @@ func (da *Dart) addOutput(s *state) error {
 	return nil
 }
 
+//Mactch return true if there exists pattern
+func (da *Dart) Matches(text string) bool {
+	b := []rune(text)
+	curr := 0
+	for i := range b {
+		for !da.nextState(curr, b[i]) {
+			curr = da.fail[curr]
+		}
+		curr = da.goTo(curr, b[i])
+		if len(da.output[curr]) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 //nextState return id of next state accoding to currentstate and next char
 func (da *Dart) nextState(currState int, char rune) bool {
 	//find currState begin value and id
 	begin := da.base[currState]
 	id := begin + int(char)
 	//check next state
-	if da.check[id] == begin {
+	if id >= len(da.check) {
+		return false
+	} else if da.check[id] == begin {
 		return true
 	} else if da.check[id] != begin && currState == 0 {
 		return true
@@ -537,9 +536,61 @@ func (da *Dart) goTo(currState int, char rune) int {
 	begin := da.base[currState]
 	id := begin + int(char)
 	//check next state
-	if da.check[id] == begin {
+	if id > len(da.check) {
+		return 0
+	} else if da.check[id] == begin {
 		return id
 	} else {
 		return 0
 	}
+}
+
+//parsetext parse a text to find matched value
+func (da *Dart) ParseText(text io.RuneReader, callback func([]int)) error {
+	curr := 0
+	for {
+		//read a rune
+		r, _, err := text.ReadRune()
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		if err == io.EOF {
+			return nil
+		}
+
+		for !da.nextState(curr, r) {
+			curr = da.fail[curr]
+		}
+
+		curr = da.goTo(curr, r)
+
+		if len(da.output[curr]) > 0 {
+			if callback != nil {
+				callback(da.output[curr])
+			}
+		}
+	}
+
+	return nil
+}
+
+//ParseString parse a string to find matched value
+func (da *Dart) ParseString(text string, callback func([]int)) error {
+	b := []rune(text)
+	curr := 0
+	for i := range b {
+		for !da.nextState(curr, b[i]) {
+			curr = da.fail[curr]
+		}
+
+		curr = da.goTo(curr, b[i])
+
+		if len(da.output[curr]) > 0 {
+			if callback != nil {
+				callback(da.output[curr])
+			}
+		}
+	}
+	return nil
 }
