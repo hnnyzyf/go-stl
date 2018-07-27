@@ -23,6 +23,10 @@ Package algorithm provides following algorithms :
   - [Cedra (Dynamic AhoCorasickDoubleArrayTrie)](/doc/cedra.md)
 
 
+Use go get to install the package :
+```
+  go get "github.com/hnnyzyf/go-stl"
+```
 
 ## Import and create a instance
 
