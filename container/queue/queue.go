@@ -35,11 +35,19 @@ func (q *Queue) Len() int {
 }
 
 //Back access last element
-func (q *Queue) Back() (interface{}, bool) {
-	return q.d.Last()
+func (q *Queue) Back() interface{} {
+	if q.IsEmpty() {
+		return nil
+	} else {
+		return q.d.Get(q.Len() - 1)
+	}
 }
 
 //Front access next element
-func (q *Queue) Front() (interface{}, bool) {
-	return q.d.First()
+func (q *Queue) Front() interface{} {
+	if q.IsEmpty() {
+		return nil
+	} else {
+		return q.d.Get(0)
+	}
 }

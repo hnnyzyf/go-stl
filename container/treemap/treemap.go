@@ -39,7 +39,7 @@ func (t *TreeMap) Find(e pair.Pair) pair.Pair {
 
 //Get is a
 func (t *TreeMap) Get(i *Miterator) pair.Pair {
-	return i.iter.GetValue().(pair.Pair)
+	return i.iter.GetData().(pair.Pair)
 
 }
 
@@ -75,8 +75,8 @@ func newMiterator(i *rbtree.Riterator) *Miterator {
 }
 
 //GetValue is a replace of *
-func (i *Miterator) GetValue() pair.Pair {
-	return i.iter.GetValue().(pair.Pair)
+func (i *Miterator) GetData() pair.Pair {
+	return i.iter.GetData().(pair.Pair)
 }
 
 //Next is a replace of ++

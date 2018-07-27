@@ -5,7 +5,7 @@ type manacher struct {
 	d rune
 }
 
-func NewManacher(start rune, delimiter rune) *manacher {
+func New(start rune, delimiter rune) *manacher {
 	return &manacher{
 		s: start,
 		d: delimiter,

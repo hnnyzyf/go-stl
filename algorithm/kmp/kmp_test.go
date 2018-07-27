@@ -5,7 +5,7 @@ import (
 )
 
 func Test_KMP(t *testing.T) {
-	k := NewKMP("ABCDABD")
+	k := New("ABCDABD")
 	off, ok := k.Match("BBC ABCDAB ABCDABCDABDE")
 	if ok {
 		t.Log("Success!")

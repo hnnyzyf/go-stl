@@ -25,8 +25,13 @@ func (s *Stack) Pop() (interface{}, bool) {
 }
 
 //Top return next element
-func (s *Stack) Top() (interface{}, bool) {
-	return s.d.Last()
+func (s *Stack) Top() interface{} {
+	if s.IsEmpty() {
+		return nil
+	} else {
+		return s.d.Get(s.Len() - 1)
+	}
+
 }
 
 //IsEpty test whether container is empty

@@ -6,7 +6,7 @@ import (
 
 func Test_manacher(t *testing.T) {
 	text := "12212921"
-	m := NewManacher('$', '#')
+	m := New('$', '#')
 	//fmt.Println(text)
 	x := m.GetLPS(text)
 	if x != "12921" {

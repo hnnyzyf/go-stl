@@ -5,7 +5,7 @@ type KMP struct {
 	p    []rune
 }
 
-func NewKMP(key string) *KMP {
+func New(key string) *KMP {
 	m := &KMP{
 		next: make([]int, len(key)),
 		p:    []rune(key),

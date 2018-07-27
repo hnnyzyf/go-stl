@@ -10,45 +10,7 @@ type Pair interface {
 	GetValue() interface{}
 }
 
-//The Pair could be bool,string,interge,float,pointers and so on,we implement some Pair we always use
-
-//bool Pair
-type BoolPair struct {
-	Key bool
-	Val interface{}
-}
-
-func Bool(Key bool, Val interface{}) *BoolPair {
-	return &BoolPair{Key, Val}
-}
-
-func (e *BoolPair) Less(Val value.Value) bool {
-	if e.Key == true && Val.(*BoolPair).Key == false {
-		return true
-	} else {
-		return false
-	}
-}
-
-func (e *BoolPair) More(Val value.Value) bool {
-	if e.Key == false && Val.(*BoolPair).Key == true {
-		return true
-	} else {
-		return false
-	}
-}
-
-func (e *BoolPair) Equal(Val value.Value) bool {
-	return e.Key == Val.(*BoolPair).Key
-}
-
-func (e *BoolPair) GetKey() interface{} {
-	return e.Key
-}
-
-func (e *BoolPair) GetValue() interface{} {
-	return e.Val
-}
+//The Pair could be string,interge,float,pointers and so on,we implement some Pair we always use
 
 //String Pair
 type StringPair struct {
@@ -61,15 +23,27 @@ func String(Key string, Val interface{}) *StringPair {
 }
 
 func (e *StringPair) Less(Val value.Value) bool {
-	return e.Key < Val.(*StringPair).Key
+	if v, ok := Val.(*StringPair); ok {
+		return e.Key < v.Key
+	} else {
+		panic("StringPair shoud be compared with StringPair")
+	}
 }
 
 func (e *StringPair) More(Val value.Value) bool {
-	return e.Key > Val.(*StringPair).Key
+	if v, ok := Val.(*StringPair); ok {
+		return e.Key > v.Key
+	} else {
+		panic("StringPair shoud be compared with StringPair")
+	}
 }
 
 func (e *StringPair) Equal(Val value.Value) bool {
-	return e.Key > Val.(*StringPair).Key
+	if v, ok := Val.(*StringPair); ok {
+		return e.Key == v.Key
+	} else {
+		panic("StringPair shoud be compared with StringPair")
+	}
 }
 
 func (e *StringPair) GetKey() interface{} {
@@ -91,15 +65,27 @@ func Uint64(Key uint64, Val interface{}) *Uint64Pair {
 }
 
 func (e *Uint64Pair) Less(Val value.Value) bool {
-	return e.Key < Val.(*Uint64Pair).Key
+	if v, ok := Val.(*Uint64Pair); ok {
+		return e.Key < v.Key
+	} else {
+		panic("Uint64Pair shoud be compared with Uint64Pair")
+	}
 }
 
 func (e *Uint64Pair) More(Val value.Value) bool {
-	return e.Key > Val.(*Uint64Pair).Key
+	if v, ok := Val.(*Uint64Pair); ok {
+		return e.Key > v.Key
+	} else {
+		panic("Uint64Pair shoud be compared with Uint64Pair")
+	}
 }
 
 func (e *Uint64Pair) Equal(Val value.Value) bool {
-	return e.Key == Val.(*Uint64Pair).Key
+	if v, ok := Val.(*Uint64Pair); ok {
+		return e.Key == v.Key
+	} else {
+		panic("Uint64Pair shoud be compared with Uint64Pair")
+	}
 }
 
 func (e *Uint64Pair) GetKey() interface{} {
@@ -121,15 +107,27 @@ func Int(Key int, Val interface{}) *IntPair {
 }
 
 func (e *IntPair) Less(Val value.Value) bool {
-	return e.Key < Val.(*IntPair).Key
+	if v, ok := Val.(*IntPair); ok {
+		return e.Key < v.Key
+	} else {
+		panic("IntPair shoud be compared with IntPair")
+	}
 }
 
 func (e *IntPair) More(Val value.Value) bool {
-	return e.Key > Val.(*IntPair).Key
+	if v, ok := Val.(*IntPair); ok {
+		return e.Key > v.Key
+	} else {
+		panic("IntPair shoud be compared with IntPair")
+	}
 }
 
 func (e *IntPair) Equal(Val value.Value) bool {
-	return e.Key == Val.(*IntPair).Key
+	if v, ok := Val.(*IntPair); ok {
+		return e.Key == v.Key
+	} else {
+		panic("IntPair shoud be compared with IntPair")
+	}
 }
 
 func (e *IntPair) GetKey() interface{} {
@@ -151,15 +149,27 @@ func Float64(Key float64, Val interface{}) *Floate64Pair {
 }
 
 func (e *Floate64Pair) Less(Val value.Value) bool {
-	return e.Key < Val.(*Floate64Pair).Key
+	if v, ok := Val.(*Floate64Pair); ok {
+		return e.Key < v.Key
+	} else {
+		panic("Floate64Pair shoud be compared with Floate64Pair")
+	}
 }
 
 func (e *Floate64Pair) More(Val value.Value) bool {
-	return e.Key > Val.(*Floate64Pair).Key
+	if v, ok := Val.(*Floate64Pair); ok {
+		return e.Key > v.Key
+	} else {
+		panic("Floate64Pair shoud be compared with Floate64Pair")
+	}
 }
 
 func (e *Floate64Pair) Equal(Val value.Value) bool {
-	return e.Key == Val.(*Floate64Pair).Key
+	if v, ok := Val.(*Floate64Pair); ok {
+		return e.Key == v.Key
+	} else {
+		panic("Floate64Pair shoud be compared with Floate64Pair")
+	}
 }
 
 func (e *Floate64Pair) GetKey() interface{} {
@@ -181,15 +191,27 @@ func Rune(Key rune, Val interface{}) *RunePair {
 }
 
 func (e *RunePair) Less(Val value.Value) bool {
-	return e.Key < Val.(*RunePair).Key
+	if v, ok := Val.(*RunePair); ok {
+		return e.Key < v.Key
+	} else {
+		panic("RunePair shoud be compared with RunePair")
+	}
 }
 
 func (e *RunePair) More(Val value.Value) bool {
-	return e.Key > Val.(*RunePair).Key
+	if v, ok := Val.(*RunePair); ok {
+		return e.Key > v.Key
+	} else {
+		panic("RunePair shoud be compared with RunePair")
+	}
 }
 
 func (e *RunePair) Equal(Val value.Value) bool {
-	return e.Key == Val.(*RunePair).Key
+	if v, ok := Val.(*RunePair); ok {
+		return e.Key == v.Key
+	} else {
+		panic("RunePair shoud be compared with RunePair")
+	}
 }
 
 func (e *RunePair) GetKey() interface{} {

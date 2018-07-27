@@ -116,7 +116,7 @@ func Test_Find(t *testing.T) {
 	}
 
 	for i := range res {
-		p, ok := treemap.Find(pair.Int(res[i].k, res[i].v))
+		p := treemap.Find(pair.Int(res[i].k, res[i].v))
 
 		pk := p.GetKey().(int)
 		py := p.GetValue().(int)
@@ -124,7 +124,7 @@ func Test_Find(t *testing.T) {
 		rk := res[i].k
 		ry := res[i].v
 
-		if !ok || pk != rk || py != ry {
+		if pk != rk || py != ry {
 			t.Error("Fail,Expect ", res[i], "(", p, ")")
 		}
 	}
@@ -140,7 +140,7 @@ func BenchmarkInsert(b *testing.B) {
 
 func BenchmarkFind(b *testing.B) {
 	t := New()
-	for i := 0; i < 1000000; i++ {
+	for i := 0; i < 100000; i++ {
 		t.Insert(pair.Int(i, i))
 	}
 

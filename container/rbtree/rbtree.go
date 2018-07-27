@@ -601,7 +601,7 @@ func newRiterator(n *node, root *node) *Riterator {
 }
 
 //value.Value return the val in node
-func (i *Riterator) GetValue() value.Value {
+func (i *Riterator) GetData() value.Value {
 	if i.n == nil {
 		return nil
 	} else {
