@@ -2,7 +2,7 @@ package algorithm
 
 import (
 	"errors"
-	"fmt"
+	//"fmt"
 	"github.com/hnnyzyf/go-stl/container/pair"
 	"github.com/hnnyzyf/go-stl/container/queue"
 	"github.com/hnnyzyf/go-stl/container/stack"
@@ -25,7 +25,8 @@ type state struct {
 
 	//output table,record the keyword index in input texts
 	emits *treeset.TreeSet
-	//fake node
+
+	//the fake node id
 	fake *state
 }
 
@@ -209,7 +210,7 @@ func (da *Dart) buildTrie(keys []string) error {
 		if err := da.addKey(key, i); err != nil {
 			return err
 		}
-		fmt.Println(i, ":add ", key)
+		//fmt.Println(i, ":add ", key)
 	}
 
 	return nil
@@ -261,17 +262,18 @@ func (da *Dart) buildDAT() error {
 		if !ok {
 			return errors.New("Find next state is a nil state")
 		}
-		output.Push(curr)
+
+		//output.Push(curr)
 		//get all child
 		slibings, err := da.fetch(curr)
 		if err != nil {
 			return err
 		}
 		//find a position for
-		begin := da.calBegin(slibings)
+		begin := da.calculate(slibings)
 
 		//set check table and stack
-		fmt.Println(id, ":Check ", curr, s.Len())
+		//fmt.Println(id, ":Check ", curr, s.Len())
 		for i := range slibings {
 			slibling := slibings[i]
 			pos := int(slibling.GetKey().(rune)) + begin
@@ -317,8 +319,8 @@ func (da *Dart) buildDAT() error {
 				return errors.New("The first child of A non-empty map is not nil,but it store a nil state")
 			}
 		}
-
-		fmt.Println("DAT:Base ", s)
+		id--
+		//fmt.Println(id," DAT:Base ", s)
 	}
 
 	return nil
@@ -351,7 +353,6 @@ func (da *Dart) fetch(s *state) ([]*pair.RunePair, error) {
 		slibings = append(slibings, pair.Rune('0', s.addFakeState()))
 	}
 
-	//add
 	for i := s.success.Begin(); i.LessEqual(s.success.End()); i.Next() {
 		p, ok := i.GetValue().(*pair.RunePair)
 		if !ok {
@@ -363,21 +364,33 @@ func (da *Dart) fetch(s *state) ([]*pair.RunePair, error) {
 	return slibings, nil
 }
 
-//calBegin calculate the begin
-func (da *Dart) calBegin(slibings []*pair.RunePair) int {
-	begin := 1
-
+//calculate calculate the begin
+func (da *Dart) calculate(slibings []*pair.RunePair) int {
+	begin := 0
+	maxkey := 0
+	if len(slibings) != 0 {
+		maxkey = int(slibings[len(slibings)-1].GetKey().(rune))
+	}
 	//find the begin
 	for {
+		begin += 1
+
+		//alloc enough memory
+		pos := maxkey + begin
+		if pos >= len(da.check) {
+			da.resize(pos + pos/4)
+		}
+
+		//if begin has been used,continue
+		if da.used[begin] {
+			continue
+		}
+
 		//find a position which check[begin+a1....an]=0
 		flag := 0
 		for i := range slibings {
 			slibing := slibings[i]
-			pos := int(slibing.GetKey().(rune)) + begin
-			//alloc enough memory
-			if pos >= len(da.check) {
-				da.resize(pos + 1)
-			}
+			pos = int(slibing.GetKey().(rune)) + begin
 			if da.check[pos] != 0 {
 				flag = 1
 				break
@@ -385,13 +398,12 @@ func (da *Dart) calBegin(slibings []*pair.RunePair) int {
 		}
 
 		//check begin whether it has not used
-		if flag == 0 && !da.used[begin] {
+		if flag == 0 {
 			da.used[begin] = true
 			break
 		}
-
-		begin += 1
 	}
+
 	return begin
 }
 

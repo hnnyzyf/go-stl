@@ -9,23 +9,6 @@ import (
 	"testing"
 )
 
-type Hit struct {
-	//the beginning index, inclusive.
-	begin int
-	//the ending index, exclusive
-	end int
-	//the value assigned to the keyword
-	value rune
-}
-
-func NewHit(begin int, end int, value rune) *Hit {
-	return &Hit{
-		begin: begin,
-		end:   end,
-		value: value,
-	}
-}
-
 //func Test_trie(t *testing.T) {
 //	ac := NewDart()
 //
@@ -122,7 +105,7 @@ func findhit(begin int, end int, pattern string) {
 }
 
 func Test_parseText(t *testing.T) {
-	dictionary, err := loadDictionary("./resource/cn/dictionary.txt")
+	dictionary, err := loadDictionary("./resource/en/dictionary.txt")
 	if err != nil {
 		t.Error(err)
 	} //
