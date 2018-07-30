@@ -25,9 +25,20 @@ Package algorithm provides following algorithms :
 
 ## Install 
 
- Use dep to install the package and manage dependency:
+ Use dep to install the package and manage dependency.
+
+If you need a container Stack,please add the dependency as followings:
+
 ```
-  dep ensure -add  "github.com/hnnyzyf/go-stl"
+  dep ensure -add  "github.com/hnnyzyf/go-stl/container/stack"
+
+```
+
+If you need a algorithm KMP,please add the dependency as followings:
+
+```
+  dep ensure -add  "github.com/hnnyzyf/go-stl/algorithm/kmp"
+
 ```
 
 
