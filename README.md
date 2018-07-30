@@ -25,13 +25,7 @@ Package algorithm provides following algorithms :
 
 ## Install 
 
-1. Use go get to install the package :
-```
-  go get "github.com/hnnyzyf/go-stl"
-```
-
-
-2. Use dep to install the package :
+ Use dep to install the package and manage dependency:
 ```
   dep ensure -add  "github.com/hnnyzyf/go-stl"
 ```
