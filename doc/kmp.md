@@ -30,6 +30,7 @@ ABCDABD|{A,AB,ABC,ABCD,ABCDA,ABCDAB}|{BCDABD,CDABD,DABD,ABD,BD,D}|0
 
 
 则其next数组为
+
 A|B|C|D|A|B|D
 ---|---|---|---|---|---|---
 0|0|0|0|1|2|0
