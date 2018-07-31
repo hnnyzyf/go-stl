@@ -19,25 +19,18 @@ func New(key string) *KMP {
 //build creates a KMP for match
 func (m *KMP) build() {
 	for i := 1; i < len(m.p); i++ {
-		//The maximum length of the prefix and suffix
-		//which is also the offset of prefix in m.p
+		//set offset as last matches word,which means
+		//letters betwwen p[0:offset] and p[i-offset:i] are the same
 		offset := m.next[i-1]
 
-		//compare current char and the next char of last max prefix
-		if m.p[i] != m.p[offset] && offset > 0 {
+		for offset > 0 && m.p[i] != m.p[offset] {
 			offset = m.next[offset-1]
 		}
 
-		//we have find a maximum prefix and suffix
-		//	two situations:
-		//		case 1:offset = 0 do nothing
-		//		case 2:m.p[i]==m.p[offset]
+		//if next letter are the same,offset + 1
 		if m.p[i] == m.p[offset] {
-			//obviously the length of maximum prefix and suffix should add 1
 			offset++
 		}
-
-		//if offset = 0 ,no maximum prefix and suffix is found
 
 		m.next[i] = offset
 	}
